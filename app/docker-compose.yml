@@ -1,0 +1,29 @@
+# Optional Postgres for local demo. H2 remains the default profile.
+# Usage:
+#   docker compose up -d
+#   export DATABASE_URL=jdbc:postgresql://localhost:5432/payevidence
+#   export DATABASE_USER=payevidence
+#   export DATABASE_PASSWORD=payevidence
+#   mvn -q spring-boot:run -Dspring-boot.run.profiles=postgres
+#
+# Tests do NOT require Docker — mvn test uses in-memory H2.
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: payevidence-postgres
+    environment:
+      POSTGRES_DB: payevidence
+      POSTGRES_USER: payevidence
+      POSTGRES_PASSWORD: payevidence
+    ports:
+      - "5432:5432"
+    volumes:
+      - payevidence_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U payevidence -d payevidence"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  payevidence_pgdata:

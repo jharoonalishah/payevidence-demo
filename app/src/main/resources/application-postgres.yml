@@ -1,0 +1,18 @@
+# Activate with: --spring.profiles.active=postgres
+# Or: mvn spring-boot:run -Dspring-boot.run.profiles=postgres
+# Requires Postgres (see docker-compose.yml). Tests stay on H2 — do not use this profile for mvn test.
+spring:
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/payevidence}
+    username: ${DATABASE_USER:payevidence}
+    password: ${DATABASE_PASSWORD:payevidence}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        jdbc:
+          time_zone: UTC

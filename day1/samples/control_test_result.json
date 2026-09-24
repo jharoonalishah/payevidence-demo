@@ -1,0 +1,185 @@
+{
+  "artifact_type": "control_test_result",
+  "tenant": "NordicPay",
+  "runner": "payevidence-synthetic-tester",
+  "suite": "pci-mvp-v0-smoke",
+  "started_at": "2026-09-23T12:05:00Z",
+  "completed_at": "2026-09-23T12:05:42Z",
+  "catalogue_id": "pci-mvp-v0",
+  "disclaimer": "Synthetic automated control tests for MVP demo. Not a QSA assessment.",
+  "summary": {
+    "total": 19,
+    "pass": 15,
+    "fail": 4
+  },
+  "results": [
+    {
+      "control_id": "PCI-REQ-10.2-LOG-ACCESS",
+      "result": "pass",
+      "detail": "Found 42 scrubbed access events including /v1/payments and /v1/refunds in last 24h",
+      "evidence_refs": [
+        "samples/api_access_log.jsonl"
+      ],
+      "completed_at": "2026-09-23T12:05:42Z"
+    },
+    {
+      "control_id": "PCI-REQ-10.3-LOG-FIELDS",
+      "result": "pass",
+      "detail": "All sampled events contain actor_id|null-for-401, method, path, status, ip, ts, scrubbed=true",
+      "evidence_refs": [
+        "samples/api_access_log.jsonl"
+      ],
+      "completed_at": "2026-09-23T12:05:42Z"
+    },
+    {
+      "control_id": "PCI-REQ-10.4-LOG-REVIEW",
+      "result": "pass",
+      "detail": "Automated SIEM review job completed; 0 critical anomalies unacknowledged",
+      "evidence_refs": [
+        "samples/api_access_log.jsonl"
+      ],
+      "completed_at": "2026-09-23T12:05:42Z"
+    },
+    {
+      "control_id": "PCI-REQ-10.5-LOG-INTEGRITY",
+      "result": "pass",
+      "detail": "integrity_protection flag true; ship-to-SIEM append path verified",
+      "evidence_refs": [
+        "samples/api_access_log.jsonl",
+        "samples/config_snapshot.json"
+      ],
+      "completed_at": "2026-09-23T12:05:42Z"
+    },
+    {
+      "control_id": "PCI-REQ-10.6-TIME-SYNC",
+      "result": "pass",
+      "detail": "chrony synchronized; offset < 100ms",
+      "evidence_refs": [
+        "samples/config_snapshot.json"
+      ],
+      "completed_at": "2026-09-23T12:05:42Z"
+    },
+    {
+      "control_id": "PCI-REQ-10.7-LOG-RETENTION",
+      "result": "pass",
+      "detail": "retention_days=365 >= 90",
+      "evidence_refs": [
+        "samples/api_access_log.jsonl",
+        "samples/config_snapshot.json"
+      ],
+      "completed_at": "2026-09-23T12:05:42Z"
+    },
+    {
+      "control_id": "PCI-REQ-7.2-ACCESS-RBAC",
+      "result": "pass",
+      "detail": "RBAC enabled; spot-check: support role cannot PUT /v1/admin/roles",
+      "evidence_refs": [
+        "samples/config_snapshot.json"
+      ],
+      "completed_at": "2026-09-23T12:05:42Z"
+    },
+    {
+      "control_id": "PCI-REQ-8.2-AUTH-MFA",
+      "result": "pass",
+      "detail": "admin_mfa_required=true for usr-admin-* roles",
+      "evidence_refs": [
+        "samples/config_snapshot.json"
+      ],
+      "completed_at": "2026-09-23T12:05:42Z"
+    },
+    {
+      "control_id": "PCI-REQ-8.3-AUTH-STRONG",
+      "result": "pass",
+      "detail": "modes include mtls and oauth2_client_credentials; password_only_admin=false",
+      "evidence_refs": [
+        "samples/config_snapshot.json"
+      ],
+      "completed_at": "2026-09-23T12:05:42Z"
+    },
+    {
+      "control_id": "PCI-REQ-8.6-API-AUTH",
+      "result": "pass",
+      "detail": "99%+ of payment/refund successes have actor_id; 401s correctly unauthenticated",
+      "evidence_refs": [
+        "samples/api_access_log.jsonl",
+        "samples/config_snapshot.json"
+      ],
+      "completed_at": "2026-09-23T12:05:42Z"
+    },
+    {
+      "control_id": "PCI-REQ-4.2-TLS-CONFIG",
+      "result": "pass",
+      "detail": "min_version 1.2; TLS1.0/1.1 disabled",
+      "evidence_refs": [
+        "samples/config_snapshot.json"
+      ],
+      "completed_at": "2026-09-23T12:05:42Z"
+    },
+    {
+      "control_id": "PCI-REQ-3.5-ENC-REST",
+      "result": "pass",
+      "detail": "at_rest.enabled=true; stores_raw_pan=false",
+      "evidence_refs": [
+        "samples/config_snapshot.json"
+      ],
+      "completed_at": "2026-09-23T12:05:42Z"
+    },
+    {
+      "control_id": "PCI-REQ-2.2-SECURE-CONFIG",
+      "result": "pass",
+      "detail": "debug endpoints off; default credentials disallowed",
+      "evidence_refs": [
+        "samples/config_snapshot.json"
+      ],
+      "completed_at": "2026-09-23T12:05:42Z"
+    },
+    {
+      "control_id": "PCI-REQ-1.2-NET-SEGMENT",
+      "result": "pass",
+      "detail": "admin_public=false; private ingress allowlist present",
+      "evidence_refs": [
+        "samples/config_snapshot.json"
+      ],
+      "completed_at": "2026-09-23T12:05:42Z"
+    },
+    {
+      "control_id": "PCI-REQ-6.5-CHANGE-MGMT",
+      "result": "fail",
+      "detail": "No change_record artifact ingested in last 30 days for payment-api",
+      "evidence_refs": [],
+      "completed_at": "2026-09-23T12:05:42Z"
+    },
+    {
+      "control_id": "PCI-REQ-6.3-SECURE-CHANGE",
+      "result": "fail",
+      "detail": "Approval-gate sampling failed: last 2 deploys missing approved_by distinct from author",
+      "evidence_refs": [
+        "samples/config_snapshot.json"
+      ],
+      "completed_at": "2026-09-23T12:05:42Z"
+    },
+    {
+      "control_id": "PCI-REQ-6.4-VULN-MGMT",
+      "result": "fail",
+      "detail": "Vuln tracker integration not connected; cannot prove criticals tracked",
+      "evidence_refs": [],
+      "completed_at": "2026-09-23T12:05:42Z"
+    },
+    {
+      "control_id": "PCI-REQ-11.3-VULN-SCAN",
+      "result": "fail",
+      "detail": "last_scan_at older than 90 days or missing in demo tenant",
+      "evidence_refs": [],
+      "completed_at": "2026-09-23T12:05:42Z"
+    },
+    {
+      "control_id": "PCI-REQ-12.10-INCIDENT-LOG",
+      "result": "pass",
+      "detail": "security_event_sink configured; IR logging pipeline ping ok",
+      "evidence_refs": [
+        "samples/api_access_log.jsonl"
+      ],
+      "completed_at": "2026-09-23T12:05:42Z"
+    }
+  ]
+}

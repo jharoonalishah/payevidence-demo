@@ -1,0 +1,17 @@
+# Free Render Blueprint for PayEvidence committee demo
+# https://render.com/docs/blueprint-spec
+services:
+  - type: web
+    name: payevidence-demo
+    runtime: docker
+    plan: free
+    dockerfilePath: ./app/Dockerfile
+    dockerContext: .
+    healthCheckPath: /demo/gate
+    envVars:
+      - key: PAYEVIDENCE_DEMO_TOKEN
+        value: nordic-demo
+      - key: H2_CONSOLE_ENABLED
+        value: "false"
+      - key: JAVA_OPTS
+        value: "-Xms128m -Xmx384m"

@@ -1,0 +1,43 @@
+# Production-ish demo stack: app + Caddy (HTTPS + basic auth).
+# From directory payevidence/ :
+#   docker compose -f app/docker-compose.deploy.yml up -d --build
+# Compose paths are relative to this file (app/). See DEPLOY.md.
+
+services:
+  payevidence:
+    build:
+      context: ..
+      dockerfile: app/Dockerfile
+    image: payevidence:0.6
+    container_name: payevidence-app
+    environment:
+      PAYEVIDENCE_DEMO_TOKEN: ${PAYEVIDENCE_DEMO_TOKEN:-nordic-demo}
+      PAYEVIDENCE_SEED_ON_STARTUP: "true"
+    volumes:
+      - payevidence_data:/app/data
+      - payevidence_packs:/app/packs
+    expose:
+      - "8080"
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2.8-alpine
+    container_name: payevidence-caddy
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      PAYEVIDENCE_DOMAIN: ${PAYEVIDENCE_DOMAIN:-localhost}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - payevidence
+    restart: unless-stopped
+
+volumes:
+  payevidence_data:
+  payevidence_packs:
+  caddy_data:
+  caddy_config:

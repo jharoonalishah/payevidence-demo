@@ -1,0 +1,254 @@
+# PayEvidence MVP control catalogue — PCI DSS v4 oriented (demo subset)
+# Disclaimer: Labels are best-effort mappings for product demo / design-partner conversation.
+# This is NOT legal advice, NOT a QSA assessment, and NOT full PCI DSS coverage.
+# Uncertain mappings are marked "mapped for MVP demo".
+#
+# version: 0.1.0
+# frozen: 2026-09-24
+# count: 20
+
+catalogue:
+  id: pci-mvp-v0
+  name: PayEvidence PCI MVP Catalogue
+  pci_version_target: "PCI DSS v4.0 (subset)"
+  scope_note: >
+    Evidence-heavy slice only: logging/monitoring, access control, change management,
+    vulnerability/patch evidence, encryption config, incident logging.
+    Do not treat as complete PCI DSS requirement coverage.
+
+controls:
+  - id: PCI-REQ-10.2-LOG-ACCESS
+    pci_ref: "PCI DSS v4 Req 10.2 — Audit logs capture access to system components (mapped for MVP demo)"
+    title: Payment API access is audited
+    description: >
+      Access to payment and refund APIs must produce durable audit records with actor,
+      path, outcome, and timestamp so auditors can prove who touched CHD-adjacent systems.
+    evidence_types: [api_access_log]
+    freshness_days: 7
+    pass_rule: >
+      At least one api_access_log artifact covering payment/refund paths exists and
+      last_event_ts is within freshness_days; entries include request_id, actor_id, path, status, ts.
+
+  - id: PCI-REQ-10.2-LOG-ADMIN
+    pci_ref: "PCI DSS v4 Req 10.2 — Audit logs capture administrative actions (mapped for MVP demo)"
+    title: Privileged admin actions are logged
+    description: >
+      Administrative and privileged operations (role changes, key rotation triggers, config
+      writes) must appear in access or change evidence with identifiable actors.
+    evidence_types: [api_access_log, change_record]
+    freshness_days: 14
+    pass_rule: >
+      api_access_log or change_record shows admin/privileged paths (e.g. /v1/admin/*)
+      with actor_id and status within freshness_days.
+
+  - id: PCI-REQ-10.3-LOG-FIELDS
+    pci_ref: "PCI DSS v4 Req 10.3 — Audit log entries record required detail (mapped for MVP demo)"
+    title: Audit log fields meet minimum detail
+    description: >
+      Log events must carry user identification, event type, date/time, success/failure,
+      and origin — enough for investigation without reconstituting CHD.
+    evidence_types: [api_access_log, control_test_result]
+    freshness_days: 14
+    pass_rule: >
+      control_test_result for this control is pass, OR sample api_access_log lines all
+      contain actor_id, method, path, status, ip, ts, scrubbed=true.
+
+  - id: PCI-REQ-10.4-LOG-REVIEW
+    pci_ref: "PCI DSS v4 Req 10.4 — Audit logs are reviewed (mapped for MVP demo)"
+    title: Security log review is evidenced
+    description: >
+      Organizations must show that payment-system logs are reviewed on a defined cadence,
+      not only retained. Automated control tests can stand in for MVP demo evidence.
+    evidence_types: [control_test_result]
+    freshness_days: 7
+    pass_rule: >
+      control_test_result includes this control_id with result=pass and completed_at
+      within freshness_days.
+
+  - id: PCI-REQ-10.5-LOG-INTEGRITY
+    pci_ref: "PCI DSS v4 Req 10.5 — Audit logs are protected from modification (mapped for MVP demo)"
+    title: Audit log integrity controls enabled
+    description: >
+      Logging configuration must show protection against unauthorized alteration
+      (e.g. append-only / integrity flag / shipping to immutable store).
+    evidence_types: [config_snapshot, control_test_result]
+    freshness_days: 30
+    pass_rule: >
+      config_snapshot.logging.integrity_protection == true (or equivalent) and snapshot
+      ts within freshness_days; optional control_test_result pass reinforces.
+
+  - id: PCI-REQ-10.6-TIME-SYNC
+    pci_ref: "PCI DSS v4 Req 10.6 — System clocks synchronized (mapped for MVP demo)"
+    title: Time synchronization enabled for correlation
+    description: >
+      Payment services must use synchronized clocks so audit events correlate across
+      components during forensic and QSA review.
+    evidence_types: [config_snapshot, control_test_result]
+    freshness_days: 30
+    pass_rule: >
+      config_snapshot.time_sync.enabled == true and ntp_or_equiv configured;
+      freshness based on snapshot ts.
+
+  - id: PCI-REQ-10.7-LOG-RETENTION
+    pci_ref: "PCI DSS v4 Req 10.5 / 10.7 — Audit log retention (mapped for MVP demo)"
+    title: Audit log retention meets policy minimum
+    description: >
+      Retention configuration must meet the organization’s PCI-aligned minimum
+      (MVP demo expects >= 90 days online or documented archive).
+    evidence_types: [config_snapshot]
+    freshness_days: 30
+    pass_rule: >
+      config_snapshot.logging.retention_days >= 90 and snapshot within freshness_days.
+
+  - id: PCI-REQ-7.2-ACCESS-RBAC
+    pci_ref: "PCI DSS v4 Req 7.2 — Access assigned based on job function / least privilege (mapped for MVP demo)"
+    title: Role-based access control enforced
+    description: >
+      Payment service must demonstrate RBAC (or equivalent need-to-know) rather than
+      shared superuser access for routine API and admin operations.
+    evidence_types: [config_snapshot, control_test_result]
+    freshness_days: 30
+    pass_rule: >
+      config_snapshot.auth.rbac_enabled == true; control_test_result pass preferred.
+
+  - id: PCI-REQ-8.2-AUTH-MFA
+    pci_ref: "PCI DSS v4 Req 8.4 / 8.5 — MFA for access into CDE (mapped for MVP demo)"
+    title: Admin MFA required
+    description: >
+      Privileged and administrative access to payment systems must require multi-factor
+      authentication; config evidence must show MFA enforced for admin roles.
+    evidence_types: [config_snapshot, control_test_result]
+    freshness_days: 30
+    pass_rule: >
+      config_snapshot.auth.admin_mfa_required == true; fail if false or missing.
+
+  - id: PCI-REQ-8.3-AUTH-STRONG
+    pci_ref: "PCI DSS v4 Req 8.3 — Strong authentication for users and systems (mapped for MVP demo)"
+    title: Strong service authentication modes
+    description: >
+      Payment APIs must not rely on weak shared secrets alone; prefer mTLS, short-lived
+      tokens, or equivalent strong auth modes documented in config.
+    evidence_types: [config_snapshot]
+    freshness_days: 30
+    pass_rule: >
+      config_snapshot.auth.modes intersects {mtls, oauth2_client_credentials, jwt_short_lived}
+      and password_only_admin == false.
+
+  - id: PCI-REQ-8.6-API-AUTH
+    pci_ref: "PCI DSS v4 Req 8.6 / API access controls (mapped for MVP demo)"
+    title: Payment API calls are authenticated
+    description: >
+      Inbound payment and refund API traffic must show authenticated actors; anonymous
+      success responses on CHD-adjacent paths are a gap.
+    evidence_types: [api_access_log, control_test_result]
+    freshness_days: 7
+    pass_rule: >
+      In api_access_log, >99% of /v1/payments and /v1/refunds events have non-null actor_id;
+      control_test_result may assert the same ratio.
+
+  - id: PCI-REQ-6.5-CHANGE-MGMT
+    pci_ref: "PCI DSS v4 Req 6.5 — Changes to system components managed (mapped for MVP demo)"
+    title: Payment stack changes are recorded
+    description: >
+      Production changes to payment services must leave change records (ticket, approver,
+      window) so auditors can trace what changed when.
+    evidence_types: [change_record, control_test_result]
+    freshness_days: 30
+    pass_rule: >
+      At least one change_record for payment-service within freshness_days OR
+      control_test_result pass asserting change-process sampling.
+
+  - id: PCI-REQ-6.3-SECURE-CHANGE
+    pci_ref: "PCI DSS v4 Req 6.2 / 6.5 — Secure change and approval (mapped for MVP demo)"
+    title: Production deploys require approval evidence
+    description: >
+      Deployments affecting payment services must show dual-control or documented
+      approval before production promotion.
+    evidence_types: [change_record, control_test_result]
+    freshness_days: 30
+    pass_rule: >
+      change_record.approved_by is present and distinct from change_record.author,
+      or control_test_result pass for approval gate.
+
+  - id: PCI-REQ-6.4-VULN-MGMT
+    pci_ref: "PCI DSS v4 Req 6.3 — Security vulnerabilities identified and addressed (mapped for MVP demo)"
+    title: Vulnerability management process evidenced
+    description: >
+      A living vuln/patch process for payment components must be evidenced via control
+      tests or change records tying remediations to findings.
+    evidence_types: [control_test_result, change_record]
+    freshness_days: 30
+    pass_rule: >
+      control_test_result for this control is pass within freshness_days
+      (MVP: automated check that vuln scanner job ran and criticals tracked).
+
+  - id: PCI-REQ-11.3-VULN-SCAN
+    pci_ref: "PCI DSS v4 Req 11.3 — External and internal vulnerability scanning (mapped for MVP demo)"
+    title: Vulnerability scan results are fresh
+    description: >
+      Internal/external vulnerability scans covering payment systems must be recent
+      enough for continuous evidence, not annual-only.
+    evidence_types: [control_test_result]
+    freshness_days: 90
+    pass_rule: >
+      control_test_result documents last_scan_at within freshness_days and
+      critical_open_count == 0 (or exceptions documented in result detail).
+
+  - id: PCI-REQ-4.2-TLS-CONFIG
+    pci_ref: "PCI DSS v4 Req 4.2 — Strong cryptography during transmission (mapped for MVP demo)"
+    title: TLS configuration uses strong protocols
+    description: >
+      Payment service ingress must disable obsolete TLS and require modern versions
+      (TLS 1.2+; prefer 1.3) for CHD-adjacent traffic.
+    evidence_types: [config_snapshot, control_test_result]
+    freshness_days: 30
+    pass_rule: >
+      config_snapshot.tls.min_version in {1.2, 1.3} and tls.versions_enabled excludes
+      {SSLv3, TLS1.0, TLS1.1}; control_test_result optional.
+
+  - id: PCI-REQ-3.5-ENC-REST
+    pci_ref: "PCI DSS v4 Req 3.5 — Cryptographic keys / protect stored account data (mapped for MVP demo)"
+    title: Encryption at rest enabled for sensitive stores
+    description: >
+      Datastores holding payment metadata or tokens must show encryption-at-rest flags
+      enabled in config evidence (MVP does not ingest real CHD).
+    evidence_types: [config_snapshot]
+    freshness_days: 30
+    pass_rule: >
+      config_snapshot.encryption.at_rest.enabled == true and key_management != "none".
+
+  - id: PCI-REQ-2.2-SECURE-CONFIG
+    pci_ref: "PCI DSS v4 Req 2.2 — Secure configuration standards applied (mapped for MVP demo)"
+    title: Secure baseline configuration applied
+    description: >
+      Payment service config must reflect hardened defaults: unnecessary services off,
+      debug endpoints disabled, security headers/logging on.
+    evidence_types: [config_snapshot, control_test_result]
+    freshness_days: 30
+    pass_rule: >
+      config_snapshot.hardening.debug_endpoints_enabled == false and
+      default_credentials_allowed == false; snapshot within freshness_days.
+
+  - id: PCI-REQ-12.10-INCIDENT-LOG
+    pci_ref: "PCI DSS v4 Req 12.10 — Incident response plan / evidence of incidents handled (mapped for MVP demo)"
+    title: Security incidents are logged and linkable
+    description: >
+      Incident and security-event logging must exist so IR playbooks can be evidenced;
+      MVP accepts control tests plus anomalous API access patterns marked in tests.
+    evidence_types: [api_access_log, control_test_result]
+    freshness_days: 30
+    pass_rule: >
+      control_test_result pass for IR logging pipeline OR config/logging shows
+      security_event_sink configured; api_access_log available for correlation.
+
+  - id: PCI-REQ-1.2-NET-SEGMENT
+    pci_ref: "PCI DSS v4 Req 1.2 / 1.3 — Network security controls / CDE segmentation (mapped for MVP demo)"
+    title: Payment tier network posture documented
+    description: >
+      Config evidence should show payment services are not exposed with unrestricted
+      admin ports and that network posture flags (private subnets / allowlists) exist.
+    evidence_types: [config_snapshot, control_test_result]
+    freshness_days: 30
+    pass_rule: >
+      config_snapshot.network.admin_public == false and allowlist_or_private_ingress == true;
+      control_test_result may validate reachability assumptions for demo.

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>PayEvidence Demo — Gate</title>
+  <link rel="stylesheet" th:href="@{/css/demo.css}"/>
+</head>
+<body>
+<div class="wrap">
+  <div class="panel gate-box">
+    <h1>PayEvidence demo</h1>
+    <p class="note">Secret link / token gate. APIs under <code>/api/**</code> stay open for local curl.</p>
+    <p class="err" th:if="${error == 'invalid'}">Invalid token. Try again.</p>
+    <form method="post" th:action="@{/demo/gate}">
+      <input type="hidden" name="next" th:value="${next}"/>
+      <label for="token">Demo token</label>
+      <input id="token" name="token" type="password" autocomplete="off" placeholder="nordic-demo" required autofocus/>
+      <button type="submit" class="primary">Enter NordicPay demo</button>
+    </form>
+    <p class="note" th:text="${hint}">hint</p>
+    <p class="note">Or open <code>/demo?token=nordic-demo</code> once to set the cookie.</p>
+  </div>
+</div>
+</body>
+</html>

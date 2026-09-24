@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title th:text="${control.id} + ' — PayEvidence'">Control</title>
+  <link rel="stylesheet" th:href="@{/css/demo.css}"/>
+</head>
+<body>
+<div class="wrap">
+  <header class="app">
+    <div>
+      <h1 th:text="${control.id}">control</h1>
+      <div class="sub"><a th:href="@{/demo}">← NordicPay dashboard</a></div>
+    </div>
+    <span class="badge" th:classappend="${status.status.name()}" th:text="${status.status.name()}">gap</span>
+  </header>
+
+  <div class="panel">
+    <h2 style="margin-top:0;font-size:1.15rem" th:text="${control.title}">title</h2>
+    <dl class="kv">
+      <dt>Status</dt>
+      <dd><span class="badge" th:classappend="${status.status.name()}" th:text="${status.status.name()}">gap</span></dd>
+      <dt>Reason</dt>
+      <dd th:text="${status.reason}">reason</dd>
+      <dt>PCI ref</dt>
+      <dd th:text="${control.pciRef}">ref</dd>
+      <dt>Freshness days</dt>
+      <dd th:text="${control.freshnessDays}">30</dd>
+      <dt>Evidence types</dt>
+      <dd><span th:each="t,iter : ${control.evidenceTypes}" th:text="${t.name()} + (${iter.last} ? '' : ', ')">type</span></dd>
+      <dt>Pass rule</dt>
+      <dd th:text="${control.passRule}">rule</dd>
+      <dt>Description</dt>
+      <dd th:text="${control.description}">desc</dd>
+      <dt>Computed at</dt>
+      <dd class="meta" th:text="${status.computedAt}">ts</dd>
+    </dl>
+  </div>
+
+  <div class="panel">
+    <h2 style="margin-top:0;font-size:1.1rem">Contributing artifacts</h2>
+    <table>
+      <thead>
+      <tr><th>Type</th><th>Captured</th><th>Path</th><th>ID</th></tr>
+      </thead>
+      <tbody>
+      <tr th:each="a : ${contributing}">
+        <td th:text="${a['type']}">type</td>
+        <td class="meta" th:text="${a['capturedAt']}">ts</td>
+        <td class="meta" th:text="${a['storagePath']}">path</td>
+        <td class="meta" th:text="${a['id']}">id</td>
+      </tr>
+      <tr th:if="${#lists.isEmpty(contributing)}">
+        <td colspan="4" class="note">No artifacts of the required evidence types for this org.</td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+</body>
+</html>

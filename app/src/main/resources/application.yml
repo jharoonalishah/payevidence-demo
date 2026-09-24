@@ -1,0 +1,42 @@
+server:
+  port: ${PORT:8080}
+
+spring:
+  application:
+    name: payevidence
+  profiles:
+    default: h2
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
+payevidence:
+  catalogue-path: ${PAYEVIDENCE_CATALOGUE:../day1/controls/pci-mvp-catalogue.yaml}
+  samples-dir: ${PAYEVIDENCE_SAMPLES:../day1/samples}
+  change-record-path: ${PAYEVIDENCE_CHANGE_RECORD:../day2-3/samples/change_record.json}
+  packs-dir: ${PAYEVIDENCE_PACKS:./packs}
+  seed-on-startup: ${PAYEVIDENCE_SEED_ON_STARTUP:true}
+  demo-token: ${PAYEVIDENCE_DEMO_TOKEN:nordic-demo}
+
+---
+spring:
+  config:
+    activate:
+      on-profile: h2
+  datasource:
+    url: jdbc:h2:file:./data/payevidence;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  h2:
+    console:
+      enabled: ${H2_CONSOLE_ENABLED:false}
+      path: /h2-console
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC

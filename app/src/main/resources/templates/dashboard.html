@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title th:text="'PayEvidence — ' + ${org.name}">PayEvidence</title>
+  <link rel="stylesheet" th:href="@{/css/demo.css}"/>
+</head>
+<body>
+<div class="wrap">
+  <header class="app">
+    <div>
+      <h1>PayEvidence — <span th:text="${org.name}">NordicPay</span></h1>
+      <div class="sub">PCI continuous evidence (MVP subset · synthetic data · no CHD)</div>
+    </div>
+    <form method="post" th:action="@{/demo/logout}" style="margin:0">
+      <button type="submit">Logout</button>
+    </form>
+  </header>
+
+  <div class="flash" th:if="${flash}" th:text="${flash}">flash</div>
+
+  <div class="chips">
+    <a class="chip pass" th:classappend="${filter == 'pass'} ? ' active'" th:href="@{/demo(status=pass)}"
+       th:text="'pass: ' + ${pass}">pass</a>
+    <a class="chip gap" th:classappend="${filter == 'gap'} ? ' active'" th:href="@{/demo(status=gap)}"
+       th:text="'gap: ' + ${gap}">gap</a>
+    <a class="chip stale" th:classappend="${filter == 'stale'} ? ' active'" th:href="@{/demo(status=stale)}"
+       th:text="'stale: ' + ${stale}">stale</a>
+    <a class="chip" th:href="@{/demo}">all</a>
+  </div>
+
+  <div class="panel">
+    <strong>Demo actions</strong>
+    <div class="actions">
+      <form method="post" th:action="@{/demo/actions/seed}">
+        <input type="hidden" name="demoProfile" value="default"/>
+        <button type="submit">Reset demo (default 16/4)</button>
+      </form>
+      <form method="post" th:action="@{/demo/actions/seed}">
+        <input type="hidden" name="demoProfile" value="withChangeRecords"/>
+        <button type="submit" class="secondary">Apply change-record profile (18/2)</button>
+      </form>
+      <form method="post" th:action="@{/demo/actions/ingest-change-records}">
+        <button type="submit">Ingest change records only</button>
+      </form>
+      <form method="post" th:action="@{/demo/actions/generate-pack}">
+        <button type="submit" class="primary">Generate evidence pack</button>
+      </form>
+    </div>
+    <p class="note">Teaching: “ingest change records only” keeps failing tests → change controls stay gap. The withChangeRecords profile adjusts demo test data so change gaps clear; vuln gaps remain.</p>
+  </div>
+
+  <div class="panel">
+    <h2 style="margin-top:0;font-size:1.1rem">Controls <span class="meta" th:if="${filter}" th:text="'· filter=' + ${filter}"></span></h2>
+    <table>
+      <thead>
+      <tr>
+        <th>ID</th>
+        <th>Title</th>
+        <th>Status</th>
+        <th>Reason</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr th:each="c : ${controls}">
+        <td><a th:href="@{/demo/controls/{id}(id=${c.control.id})}" th:text="${c.control.id}">id</a></td>
+        <td th:text="${c.control.title}">title</td>
+        <td><span class="badge" th:classappend="${c.status.name()}" th:text="${c.status.name()}">pass</span></td>
+        <td class="meta" th:text="${c.reason}">reason</td>
+      </tr>
+      <tr th:if="${#lists.isEmpty(controls)}">
+        <td colspan="4" class="note">No controls for this filter.</td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="panel">
+    <h2 style="margin-top:0;font-size:1.1rem">Recent evidence packs</h2>
+    <table>
+      <thead>
+      <tr>
+        <th>Created (UTC)</th>
+        <th>Pack ID</th>
+        <th>Links</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr th:each="p : ${packs}" th:classappend="${p.id.toString() == highlightPackId} ? ' hl'">
+        <td th:text="${p.createdAt}">ts</td>
+        <td class="meta" th:text="${p.id}">id</td>
+        <td class="pack-links">
+          <a th:href="@{/api/orgs/{oid}/evidence-packs/{pid}(oid=${org.id},pid=${p.id},format=html)}" target="_blank">View HTML</a>
+          <a th:href="@{/api/orgs/{oid}/evidence-packs/{pid}/download(oid=${org.id},pid=${p.id},format=html)}">Download HTML</a>
+          <a th:href="@{/api/orgs/{oid}/evidence-packs/{pid}/download(oid=${org.id},pid=${p.id},format=pdf)}">Download PDF</a>
+        </td>
+      </tr>
+      <tr th:if="${#lists.isEmpty(packs)}">
+        <td colspan="3" class="note">No packs yet — click Generate evidence pack.</td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+</body>
+</html>

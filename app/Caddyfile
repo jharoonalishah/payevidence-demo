@@ -1,0 +1,18 @@
+# Reverse proxy + HTTPS + basic auth in front of PayEvidence.
+# Replace demo.example.com and the bcrypt hash before use.
+# Generate hash:  caddy hash-password --plaintext 'your-strong-password'
+#
+# Usage with docker compose (see DEPLOY.md):
+#   caddy reverse-proxies to payevidence:8080 and requires HTTP basic auth.
+
+{$PAYEVIDENCE_DOMAIN:localhost} {
+	# ACME / Let's Encrypt when DNS points here and ports 80/443 are open
+	encode gzip
+
+	basicauth {
+		# username "demo" — REPLACE this hash
+		demo $2a$14$REPLACE_WITH_CADDY_HASH_PASSWORD_OUTPUT
+	}
+
+	reverse_proxy payevidence:8080
+}
