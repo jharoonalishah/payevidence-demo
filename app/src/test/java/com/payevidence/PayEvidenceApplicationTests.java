@@ -3,7 +3,9 @@ package com.payevidence;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.payevidence.service.SeedService;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +20,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 
@@ -26,14 +30,30 @@ class PayEvidenceApplicationTests {
 
   @DynamicPropertySource
   static void props(DynamicPropertyRegistry r) {
-    Path root = Path.of("/workspace/haroon-estonia/payevidence").toAbsolutePath();
+    Path root = repoRoot();
     r.add("payevidence.catalogue-path", () -> root.resolve("day1/controls/pci-mvp-catalogue.yaml").toString());
     r.add("payevidence.samples-dir", () -> root.resolve("day1/samples").toString());
     r.add("payevidence.change-record-path", () -> root.resolve("day2-3/samples/change_record.json").toString());
     r.add("payevidence.seed-on-startup", () -> "true");
     r.add("payevidence.packs-dir", () -> root.resolve("app/packs-test").toString());
     r.add("spring.datasource.url", () -> "jdbc:h2:mem:payevidence_test;MODE=PostgreSQL;DB_CLOSE_DELAY=-1");
+    r.add("spring.datasource.driver-class-name", () -> "org.h2.Driver");
+    r.add("spring.datasource.username", () -> "sa");
+    r.add("spring.datasource.password", () -> "");
     r.add("payevidence.demo-token", () -> "nordic-demo");
+    r.add("payevidence.admin-token", () -> "test-admin");
+  }
+
+  static Path repoRoot() {
+    Path cwd = Path.of("").toAbsolutePath().normalize();
+    if (Files.exists(cwd.resolve("day1/controls/pci-mvp-catalogue.yaml"))) {
+      return cwd;
+    }
+    Path parent = cwd.getParent();
+    if (parent != null && Files.exists(parent.resolve("day1/controls/pci-mvp-catalogue.yaml"))) {
+      return parent;
+    }
+    throw new IllegalStateException("Cannot locate repo root from " + cwd);
   }
 
   @Autowired SeedService seedService;
@@ -199,6 +219,81 @@ class PayEvidenceApplicationTests {
     ResponseEntity<String> gate = rest.getForEntity("/demo/gate", String.class);
     assertThat(gate.getStatusCode()).isEqualTo(HttpStatus.OK);
     assertThat(gate.getBody()).contains("Demo token");
+  }
+
+  @Test
+  void landingIsPublicAndSignupShowsSuccess() {
+    ResponseEntity<String> home = rest.getForEntity("/", String.class);
+    assertThat(home.getStatusCode()).isEqualTo(HttpStatus.OK);
+    assertThat(home.getBody()).contains("Payment-stack artifacts, mapped to controls");
+    assertThat(home.getBody()).contains("pass, gap, or stale");
+    assertThat(home.getBody()).contains("dated evidence packs");
+    assertThat(home.getBody()).contains("Payment companies and fintechs");
+    assertThat(home.getBody()).doesNotContain("You’re on the list.");
+    assertThat(home.getBody()).contains("Request early access");
+    assertThat(home.getBody()).contains("/demo/gate");
+    assertThat(home.getBody()).doesNotContain("Demo token");
+
+    ResponseEntity<String> signupPage = rest.getForEntity("/signup", String.class);
+    assertThat(signupPage.getStatusCode()).isEqualTo(HttpStatus.OK);
+    assertThat(signupPage.getBody()).contains("Work email");
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+    MultiValueMap<String, String> bad = new LinkedMultiValueMap<>();
+    bad.add("name", "Ada");
+    bad.add("email", "not-an-email");
+    bad.add("company", "NordicPay");
+    bad.add("returnTo", "signup");
+    ResponseEntity<String> invalid = rest.exchange(
+        "/signup", HttpMethod.POST, new HttpEntity<>(bad, headers), String.class);
+    assertThat(invalid.getStatusCode()).isEqualTo(HttpStatus.OK);
+    assertThat(invalid.getBody()).contains("Enter a valid work email.");
+    assertThat(invalid.getBody()).doesNotContain("You’re on the list.");
+
+    MultiValueMap<String, String> good = new LinkedMultiValueMap<>();
+    good.add("name", "Ada Lovelace");
+    good.add("email", "Ada@NordicPay.example");
+    good.add("company", "NordicPay");
+    good.add("role", "Head of Compliance");
+    good.add("message", "PCI audit next quarter");
+    good.add("returnTo", "signup");
+    ResponseEntity<String> created = rest.exchange(
+        "/signup", HttpMethod.POST, new HttpEntity<>(good, headers), String.class);
+    ResponseEntity<String> thanks = followRedirect(created);
+    assertThat(thanks.getStatusCode()).isEqualTo(HttpStatus.OK);
+    assertThat(thanks.getBody()).contains("You’re on the list.");
+    assertThat(thanks.getBody()).doesNotContain("name=\"email\"");
+
+    ResponseEntity<String> again = followRedirect(rest.exchange(
+        "/signup", HttpMethod.POST, new HttpEntity<>(good, headers), String.class));
+    assertThat(again.getBody()).contains("already registered");
+
+    ResponseEntity<String> locked = rest.getForEntity("/admin/signups", String.class);
+    assertThat(locked.getStatusCode()).isEqualTo(HttpStatus.OK);
+    assertThat(locked.getBody()).contains("Admin token");
+    assertThat(locked.getBody()).doesNotContain("Ada@NordicPay.example".toLowerCase());
+    assertThat(locked.getBody()).doesNotContain("ada@nordicpay.example");
+
+    HttpHeaders auth = new HttpHeaders();
+    auth.setBearerAuth("test-admin");
+    ResponseEntity<String> list = rest.exchange(
+        "/admin/signups", HttpMethod.GET, new HttpEntity<>(auth), String.class);
+    assertThat(list.getStatusCode()).isEqualTo(HttpStatus.OK);
+    assertThat(list.getBody()).contains("ada@nordicpay.example");
+    assertThat(list.getBody()).contains("NordicPay");
+    assertThat(list.getBody()).contains("Head of Compliance");
+  }
+
+  private ResponseEntity<String> followRedirect(ResponseEntity<String> response) {
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FOUND);
+    URI location = response.getHeaders().getLocation();
+    assertThat(location).isNotNull();
+    String path = location.getRawPath() == null ? location.toString() : location.getRawPath();
+    if (location.getRawQuery() != null) {
+      path = path + "?" + location.getRawQuery();
+    }
+    return rest.getForEntity(path, String.class);
   }
 
   @Test

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>PayEvidence — Signups</title>
+  <link rel="stylesheet" th:href="@{/css/demo.css}"/>
+</head>
+<body>
+<div class="wrap">
+  <div class="panel gate-box">
+    <h1>Signup admin</h1>
+    <p class="note">Enter the <code>ADMIN_TOKEN</code> for this service. It is not the demo token.</p>
+    <p class="err" th:if="${error == 'invalid'}">Invalid token.</p>
+    <form method="post" th:action="@{/admin/signups}">
+      <label for="token">Admin token</label>
+      <input id="token" name="token" type="password" autocomplete="off" required autofocus/>
+      <button type="submit" class="primary">View signups</button>
+    </form>
+  </div>
+</div>
+</body>
+</html>

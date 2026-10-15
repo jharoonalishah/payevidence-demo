@@ -16,7 +16,11 @@ payevidence:
   change-record-path: ${PAYEVIDENCE_CHANGE_RECORD:../day2-3/samples/change_record.json}
   packs-dir: ${PAYEVIDENCE_PACKS:./packs}
   seed-on-startup: ${PAYEVIDENCE_SEED_ON_STARTUP:true}
+  # Synthetic samples are dated 2026-09-23. Pin the freshness clock so the NordicPay
+  # demo stays pass=16 gap=4. Set PAYEVIDENCE_AS_OF empty to score against the real clock.
+  as-of: "${PAYEVIDENCE_AS_OF:2026-09-24T12:00:00Z}"
   demo-token: ${PAYEVIDENCE_DEMO_TOKEN:nordic-demo}
+  admin-token: ${ADMIN_TOKEN:}
 
 ---
 spring:

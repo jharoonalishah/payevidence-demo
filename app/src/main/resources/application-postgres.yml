@@ -1,6 +1,10 @@
 # Activate with: --spring.profiles.active=postgres
 # Or: mvn spring-boot:run -Dspring-boot.run.profiles=postgres
 # Requires Postgres (see docker-compose.yml). Tests stay on H2 — do not use this profile for mvn test.
+#
+# A Neon or Render DATABASE_URL (postgres:// or postgresql://) is applied automatically
+# at startup, including user and password, without this profile. This file remains the
+# local path: jdbc DATABASE_URL plus DATABASE_USER / DATABASE_PASSWORD.
 spring:
   datasource:
     url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/payevidence}

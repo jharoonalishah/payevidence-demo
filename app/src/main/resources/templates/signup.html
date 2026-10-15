@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Request early access — PayEvidence</title>
+  <meta name="description" content="Request early access to PayEvidence, continuous PCI DSS evidence for payment companies and fintechs."/>
+  <link rel="stylesheet" th:href="@{/css/demo.css}"/>
+</head>
+<body class="marketing">
+<header class="nav">
+  <a class="brand" th:href="@{/}">PayEvidence</a>
+  <div class="nav-links">
+    <a th:href="@{/}">Home</a>
+    <a class="btn secondary" th:href="@{/demo/gate}">View the demo</a>
+  </div>
+</header>
+
+<main class="signup-page">
+  <section class="signup-card panel" id="signup">
+    <div th:if="${submitted}">
+      <div th:replace="~{fragments/signup-form :: success}"></div>
+    </div>
+    <div th:unless="${submitted}">
+      <p class="eyebrow">Early access</p>
+      <h1>Request early access</h1>
+      <p class="lede tight">PayEvidence turns payment-stack artifacts into a live map of PCI DSS controls — pass, gap, or stale — and exports dated evidence packs. For payment companies and fintechs facing PCI audits.</p>
+      <div th:replace="~{fragments/signup-form :: form('signup')}"></div>
+    </div>
+  </section>
+</main>
+<script th:src="@{/js/signup.js}"></script>
+</body>
+</html>
