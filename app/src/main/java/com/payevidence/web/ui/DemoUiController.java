@@ -63,11 +63,6 @@ public class DemoUiController {
     this.properties = properties;
   }
 
-  @GetMapping("/")
-  public String root() {
-    return "redirect:/demo";
-  }
-
   @GetMapping("/demo/gate")
   public String gate(
       @RequestParam(required = false) String next,

@@ -74,9 +74,10 @@ Default token: **`nordic-demo`** (override with `PAYEVIDENCE_DEMO_TOKEN`).
 
 | URL | What |
 |-----|------|
+| http://localhost:8080/ | Public landing page and early-access form |
+| http://localhost:8080/signup | Same form on its own page |
 | http://localhost:8080/demo?token=nordic-demo | NordicPay dashboard (sets cookie) |
 | http://localhost:8080/demo/gate | Token form |
-| http://localhost:8080/ | Redirects to `/demo` |
 
 **Auth story:** UI pages need the token (query or cookie). **`/api/**` stays open** for local curl. On a public VPS put basic-auth in front — see `app/DEPLOY.md`.
 

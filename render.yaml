@@ -15,3 +15,10 @@ services:
         value: "false"
       - key: JAVA_OPTS
         value: "-Xms128m -Xmx384m"
+      # Neon (or any Postgres) connection string. postgres:// and postgresql:// URLs are
+      # converted to JDBC. Leave unset to keep the local H2 fallback (signups are logged).
+      - key: DATABASE_URL
+        sync: false
+      # Gates GET/POST /admin/signups. Leave unset to hide that page (404).
+      - key: ADMIN_TOKEN
+        sync: false

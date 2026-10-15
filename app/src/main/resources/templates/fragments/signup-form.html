@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<form th:fragment="form(returnTo)" class="signup-form" method="post" th:action="@{/signup}">
+  <input type="hidden" name="returnTo" th:value="${returnTo}"/>
+  <div class="field">
+    <label for="name">Name</label>
+    <input id="name" name="name" type="text" autocomplete="name" maxlength="120" required
+           th:value="${form.name}"/>
+    <p class="err" th:if="${errors != null and errors.containsKey('name')}" th:text="${errors['name']}">name</p>
+  </div>
+  <div class="field">
+    <label for="email">Work email</label>
+    <input id="email" name="email" type="email" autocomplete="email" maxlength="200" required
+           th:value="${form.email}" placeholder="you@company.com"/>
+    <p class="err" th:if="${errors != null and errors.containsKey('email')}" th:text="${errors['email']}">email</p>
+  </div>
+  <div class="field">
+    <label for="company">Company</label>
+    <input id="company" name="company" type="text" autocomplete="organization" maxlength="160" required
+           th:value="${form.company}"/>
+    <p class="err" th:if="${errors != null and errors.containsKey('company')}" th:text="${errors['company']}">company</p>
+  </div>
+  <div class="field">
+    <label for="role">Role <span class="note">(optional)</span></label>
+    <input id="role" name="role" type="text" autocomplete="organization-title" maxlength="120"
+           th:value="${form.role}" placeholder="Head of Compliance, PCI lead, CISO"/>
+    <p class="err" th:if="${errors != null and errors.containsKey('role')}" th:text="${errors['role']}">role</p>
+  </div>
+  <div class="field">
+    <label for="message">Message <span class="note">(optional)</span></label>
+    <textarea id="message" name="message" rows="4" maxlength="2000"
+              th:text="${form.message}" placeholder="Audit timing, stack, or what you want from a design partner"></textarea>
+    <p class="err" th:if="${errors != null and errors.containsKey('message')}" th:text="${errors['message']}">message</p>
+  </div>
+  <button type="submit" class="primary" data-signup-submit>Request early access</button>
+  <p class="note">We’ll use this only to follow up about early access. No card data.</p>
+</form>
+
+<div th:fragment="success" class="success-panel" role="status">
+  <p class="eyebrow">Early access</p>
+  <h2>You’re on the list.</h2>
+  <p th:if="${already}">This work email is already registered. We’ll be in touch.</p>
+  <p th:unless="${already}">Thanks — we’ll be in touch about early access to PayEvidence.</p>
+  <p><a class="btn secondary" th:href="@{/demo/gate}">View the NordicPay demo</a></p>
+</div>
+</body>
+</html>

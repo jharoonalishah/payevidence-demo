@@ -40,13 +40,13 @@ public class DemoTokenFilter extends OncePerRequestFilter {
     if (path == null) {
       return true;
     }
-    // APIs open for curl; static assets and gate form unauthenticated
+    // APIs, static assets, the public site, and the gate form stay unauthenticated.
+    // Only the NordicPay demo UI (/demo, /demo/** except /demo/gate) requires the token.
     if (path.startsWith("/api/")) return true;
     if (path.startsWith("/css/") || path.startsWith("/js/") || path.startsWith("/images/")) return true;
     if (path.startsWith("/h2-console")) return true;
     if (path.equals("/demo/gate") || path.equals("/error")) return true;
-    // Only gate the UI surface
-    if (path.equals("/") || path.equals("/demo") || path.startsWith("/demo/")) return false;
+    if (path.equals("/demo") || path.startsWith("/demo/")) return false;
     return true;
   }
 

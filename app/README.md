@@ -24,9 +24,11 @@ mvn -q spring-boot:run
 
 | URL | Purpose |
 |-----|---------|
+| http://localhost:8080/ | Public landing + early-access form |
+| http://localhost:8080/signup | Signup form |
 | http://localhost:8080/demo?token=nordic-demo | Dashboard (sets cookie) |
 | http://localhost:8080/demo/gate | Token form |
-| http://localhost:8080/ | Redirects to `/demo` |
+| http://localhost:8080/admin/signups | Signup list, only if `ADMIN_TOKEN` is set |
 
 **Default demo token:** `nordic-demo` (`payevidence.demo-token` / `PAYEVIDENCE_DEMO_TOKEN`).  
 **Auth story:** UI pages require the token (query or cookie). **`/api/**` stays open** for local curl. On a public VPS, put Caddy/nginx basic-auth in front — see `DEPLOY.md`.
@@ -39,7 +41,10 @@ Optional env overrides:
 
 - `PAYEVIDENCE_CATALOGUE`, `PAYEVIDENCE_SAMPLES`, `PAYEVIDENCE_CHANGE_RECORD`, `PAYEVIDENCE_PACKS`
 - `PAYEVIDENCE_SEED_ON_STARTUP=false`
+- `PAYEVIDENCE_AS_OF` — freshness clock for scoring. Defaults to `2026-09-24T12:00:00Z` (the day the synthetic samples were frozen) so NordicPay stays pass=16 gap=4. Set it empty to score against the real clock.
 - `PAYEVIDENCE_DEMO_TOKEN`
+- `DATABASE_URL` — Neon/Render `postgres://` URL, or a `jdbc:postgresql:` URL with `DATABASE_USER` / `DATABASE_PASSWORD`. Unset keeps H2 and logs each signup.
+- `ADMIN_TOKEN` — required to open `/admin/signups`. Unset hides that page.
 
 ## Optional Postgres
 

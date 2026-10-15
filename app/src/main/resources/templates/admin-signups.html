@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Signups — PayEvidence</title>
+  <link rel="stylesheet" th:href="@{/css/demo.css}"/>
+</head>
+<body>
+<div class="wrap">
+  <header class="app">
+    <div>
+      <h1>Early-access signups</h1>
+      <div class="sub" th:text="${store}">store</div>
+    </div>
+    <a class="btn" th:href="@{/}">Landing</a>
+  </header>
+  <p class="note" th:if="${#lists.isEmpty(signups)}">No signups yet.</p>
+  <div class="panel table-scroll" th:unless="${#lists.isEmpty(signups)}">
+    <table>
+      <thead>
+        <tr>
+          <th>When</th>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Company</th>
+          <th>Role</th>
+          <th>Message</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="s : ${signups}">
+          <td th:text="${s.createdAtLabel}">time</td>
+          <td th:text="${s.name}">name</td>
+          <td th:text="${s.email}">email</td>
+          <td th:text="${s.company}">company</td>
+          <td th:text="${s.role}">role</td>
+          <td th:text="${s.message}">message</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note">Same rows live in the <code>signups</code> table (<code>created_at, name, email, company, job_role, message</code>).</p>
+</div>
+</body>
+</html>

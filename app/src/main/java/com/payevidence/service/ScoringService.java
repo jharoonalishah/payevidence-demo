@@ -2,6 +2,7 @@ package com.payevidence.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.payevidence.config.PayEvidenceProperties;
 import com.payevidence.domain.*;
 import com.payevidence.repo.ArtifactRepository;
 import com.payevidence.repo.ControlRepository;
@@ -28,21 +29,33 @@ public class ScoringService {
   private final ArtifactRepository artifactRepository;
   private final ControlStatusRepository statusRepository;
   private final ObjectMapper objectMapper;
+  private final PayEvidenceProperties properties;
 
   public ScoringService(
       ControlRepository controlRepository,
       ArtifactRepository artifactRepository,
       ControlStatusRepository statusRepository,
-      ObjectMapper objectMapper) {
+      ObjectMapper objectMapper,
+      PayEvidenceProperties properties) {
     this.controlRepository = controlRepository;
     this.artifactRepository = artifactRepository;
     this.statusRepository = statusRepository;
     this.objectMapper = objectMapper;
+    this.properties = properties;
+  }
+
+  /** Sample artifacts are dated 2026-09-23. An explicit as-of keeps that demo inside freshness. */
+  Instant scoringNow() {
+    String asOf = properties.getAsOf();
+    if (asOf == null || asOf.isBlank()) {
+      return Instant.now();
+    }
+    return Instant.parse(asOf.trim());
   }
 
   @Transactional
   public List<ControlStatus> recomputeAll(Organization org) {
-    Instant now = Instant.now();
+    Instant now = scoringNow();
     List<Artifact> artifacts = artifactRepository.findByOrganization(org);
     List<Control> controls = controlRepository.findAll();
     List<ControlStatus> results = new ArrayList<>();
